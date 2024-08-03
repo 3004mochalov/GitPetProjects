@@ -1,0 +1,117 @@
+вот файл map_test1.py:
+
+import pygame
+from Config import WIDTH, HEIGHT
+
+def initialize_map():
+    # Загрузка изображения карты и создание его прямоугольника
+    map_image = pygame.image.load('Maps/MapSprites/layoutTest.png')
+    map_rect = map_image.get_rect()
+
+    return map_image, map_rect
+
+вот файл NewGame.py:
+
+import pygame
+from Config import WIDTH, HEIGHT
+from PlayerBehavior import Player
+from map_test1 import initialize_map
+
+def update_camera(camera, target_rect):
+    x, y, _, _ = target_rect
+    _, _, w, h = camera
+    half_width, half_height = WIDTH // 2, HEIGHT // 2
+
+    # Центрирование камеры относительно цели
+    camera = pygame.Rect(x - half_width, y - half_height, w, h)
+
+    # Не допускаем выхода за левую и верхнюю границы карты
+    camera.x = max(camera.x, 0)
+    camera.y = max(camera.y, 0)
+
+    # Не допускаем выхода за правую и нижнюю границы карты
+    camera.x = min(camera.x, map_rect.width - camera.width)
+    camera.y = min(camera.y, map_rect.height - camera.height)
+
+    return camera
+
+
+# Инициализация Pygame и создание экрана
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+
+# Инициализация карты
+map_image, map_rect = initialize_map()
+
+# Загрузка спрайта игрока и создание объекта
+player = Player('characters/CharactersSprites/TestCharacter/test.png', (WIDTH//2, HEIGHT//2))
+
+# Создание камеры
+camera = pygame.Rect(0, 0, WIDTH, HEIGHT)
+
+# Главный игровой цикл
+running = True
+while running:
+    # Обработка событий
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Обновление игрока
+    keys = pygame.key.get_pressed()
+    player.update(keys)
+
+    # Обновление камеры
+    camera = update_camera(camera, player.rect)
+    # Отрисовка карты с учетом камеры
+    screen.blit(map_image, (0, 0), camera)
+    # Отрисовка игрока относительно камеры
+    player.draw(screen, camera)
+
+    # Обновление экрана
+    pygame.display.flip()
+    clock.tick(60)  # ФПС
+
+pygame.quit()
+
+
+вот файл PlayerBehavior.py:
+
+import pygame
+from Config import WIDTH, HEIGHT, up, left, down, right
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self, image, position):
+        super().__init__()
+        self.image = pygame.image.load(image)
+        self.rect = self.image.get_rect(topleft=position)
+        self.speed = 5
+
+    def update(self, keys):
+        if keys[getattr(pygame, f'K_{up}')]:
+            self.rect.y -= self.speed
+        if keys[getattr(pygame, f'K_{left}')]:
+            self.rect.x -= self.speed
+        if keys[getattr(pygame, f'K_{down}')]:
+            self.rect.y += self.speed
+        if keys[getattr(pygame, f'K_{right}')]:
+            self.rect.x += self.speed
+
+        # Ограничиваем передвижение игрока границами экрана
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
+
+    def draw(self, screen, camera):
+        # Смещение изображения игрока относительно камеры
+        screen.blit(self.image, (self.rect.x - camera.x, self.rect.y - camera.y))
+
+добавь учёт координат расположения игрока и сделай так чтобы игрок мог перемещаться быстрее удерживая кнопку shift
+
+

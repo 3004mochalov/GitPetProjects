@@ -1,0 +1,79 @@
+Введите количество запросов: 
+3
+Введите запрос: 
+b
+Введите запрос: 
+b
+Введите запрос: 
+b
+OK
+b1
+b2
+Введите количество запросов: 
+10
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+Введите запрос: 
+bhnqaptmp
+OK
+bhnqaptmp1
+bhnqaptmp2
+bhnqaptmp3
+bhnqaptmp4
+bhnqaptmp5
+bhnqaptmp6
+bhnqaptmp7
+bhnqaptmp8
+bhnqaptmp9
+Введите количество запросов: 
+10
+Введите запрос: 
+fpqhfouqdldravpjttarh
+Введите запрос: 
+fpqhfouqdldravpjttarh
+Введите запрос: 
+fpqhfouqdldravpjttarh
+Введите запрос: 
+fpqhfouqdldravpjttarh
+Введите запрос: 
+fpqhfouqdldravpjttarh
+Введите запрос: 
+fpqhfouqdldravpjttarh
+Введите запрос: 
+jmvlplnrmba
+Введите запрос: 
+fpqhfouqdldravpjttarh
+Введите запрос: 
+jmvlplnrmba
+Введите запрос: 
+fpqhfouqdldravpjttarh
+OK
+fpqhfouqdldravpjttarh1
+fpqhfouqdldravpjttarh2
+fpqhfouqdldravpjttarh3
+fpqhfouqdldravpjttarh4
+fpqhfouqdldravpjttarh5
+OK
+fpqhfouqdldravpjttarh6
+jmvlplnrmba1
+fpqhfouqdldravpjttarh7
+
+
+** Process exited - Return Code: 0 **
+Press Enter to exit terminal

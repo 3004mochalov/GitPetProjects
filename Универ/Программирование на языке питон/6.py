@@ -1,0 +1,41 @@
+def main(x):
+    match x[1]:
+        case 1959:
+            match x[0]:
+                case 1986:
+                    match x[2]:
+                        case 'OX':
+                            return 0
+                        case 'APL':
+                            return 1
+                        case 'QML':
+                            return 2
+                case 1967:
+                    return 3
+        case 2008:
+            match x[0]:
+                case 1986:
+                    return 4
+                case 1967:
+                    match x[3]:
+                        case 'RAGEL':
+                            return 5
+                        case 'XTEND':
+                            return 6
+                        case 'RUST':
+                            return 7
+        case 2009:
+            match x[0]:
+                case 1986:
+                    match x[3]:
+                        case 'RAGEL':
+                            return 8
+                        case 'XTEND':
+                            return 9
+                        case 'RUST':
+                            return 10
+                case 1967:
+                    return 11
+
+main([1986, 1959, 'QML', 'RUST'])
+main([1967, 1959, 'QML', 'RAGEL'])

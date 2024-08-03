@@ -1,0 +1,7 @@
+A p–n junction is a boundary or interface between two types of semiconductor materials,
+ p-type and n-type, inside a single crystal of semiconductor. The (positive) side contains an excess of holes, while the (negative) side 
+contains an excess of electrons in the outer shells of the electrically neutral atoms there. 
+This allows electrical current to pass through the junction only in one direction. The p-n junction is created by doping, 
+for example by ion implantation, diffusion of dopants, or by epitaxy (growing a layer of crystal doped with one type of dopant on top of a layer of crystal 
+doped with another type of dopant). If two separate pieces of material were used, this would introduce a grain boundary between the semiconductors that would severely inhibit its
+ utility by scattering the electrons and holes

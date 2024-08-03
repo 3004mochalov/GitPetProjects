@@ -1,0 +1,104 @@
+вот файл design_1.v:
+
+`timescale 1ns / 1ps
+
+module design_1 (
+    input [0:6] x,
+    input clk,
+    output [0:9] out
+);
+    reg [3:0] weights [0:9]; // Веса для каждой цифры
+    reg [0:9] recognized;    // Выходы персептронов для каждой цифры
+    integer i;
+
+    initial begin
+        // Инициализация весов
+        for (i = 0; i < 10; i = i + 1) begin
+            weights[i] = 4'b0000; // Измените веса в соответствии с обучением
+        end
+    end
+
+    genvar j;
+    generate
+        for (j = 0; j < 10; j = j + 1) begin
+            Perceptron p (
+                .x(x),
+                .weights(weights[j]),
+                .out(recognized[j])
+            );
+        end
+    endgenerate
+
+    always @(posedge clk) begin
+        // В этом блоке вы можете добавить логику для обучения персептрона,
+        // чтобы он корректно распознавал цифры на семисегментном индикаторе
+        // в зависимости от входных данных x и правильных ответов.
+    end
+
+    assign out = recognized;
+
+endmodule
+
+вот файл test.v:
+
+`timescale 1ns / 1ps
+
+module test;
+
+    reg clk;
+    reg [0:6] x;
+    wire [0:9] out;
+    
+    // Инстанцируем дизайн, который мы хотим протестировать
+    design_1 uut (
+        .x(x),
+        .clk(clk),
+        .out(out)
+    );
+    
+    // Часы для тестирования, скажем 100MHz
+    initial clk = 0;
+    always #5 clk = !clk;  // Переключение каждые 5 наносекунд
+    
+    // Пример: настройка ввода для отображения цифры 3
+    //   _         _   _         _   _     _   _
+    //  |_| цифра 0: 0b000_0001 (1 - не горит, 0 - горит)
+    //  |_| цифра 1: 0b100_1111
+    // И так далее в соответствии с кодировкой вашего семисегментного индикатора.
+    // Обратите внимание, что могут быть различные стандарты кодировки.
+    
+    initial begin
+        // Цифры от 0 до 9, и обозначение семи сегментов a, b, c, d, e, f, g. Вход x инвертирован.
+        // Кодировка должна быть напротив, когда '0' обозначает включенный сегмент,
+        // и '1' обозначает выключенный сегмент из-за входной полярности в design_1.
+        // Пример дан для общего анода, когда '0' активирует сегмент, а '1' выключает его.
+        #10 x = 7'b111_1110; // Цифра 0
+        #10 x = 7'b011_0000; // Цифра 1
+        #10 x = 7'b110_1101; // Цифра 2
+        #10 x = 7'b111_1001; // Цифра 3
+        #10 x = 7'b011_0011; // Цифра 4
+        #10 x = 7'b101_1011; // Цифра 5
+        #10 x = 7'b101_1111; // Цифра 6
+        #10 x = 7'b111_0000; // Цифра 7
+        #10 x = 7'b111_1111; // Цифра 8
+        #10 x = 7'b111_1011; // Цифра 9
+        #10 $finish; // Конец теста
+    end
+    
+    initial begin
+        $monitor("Time = %8t x = %7b out = %10b \n", $time, x, out);
+    end
+
+endmodule
+
+Vivado Simulator v2022.2
+Copyright 1986-1999, 2001-2022 Xilinx, Inc. All Rights Reserved.
+Running: C:/Users/User/Desktop/Xilinx_Windows_Unpacked_2022_2/Vivado/2022.2/bin/unwrapped/win64.o/xelab.exe --incr --debug typical --relax --mt 2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip --snapshot test_behav xil_defaultlib.test xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+ERROR: [VRFC 10-3236] concurrent assignment to a non-net 'recognized' is not permitted [H:/7/PN/2/project_2/project_2.srcs/sources_1/new/design_1.v:25]
+ERROR: [XSIM 43-3322] Static elaboration of top level Verilog design unit(s) in library work failed.
+
+Исправь ошибку, попробуй заполнить пустующий блок логикой распознователя цифр семисегментного индикатора
+

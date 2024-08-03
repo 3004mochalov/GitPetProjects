@@ -1,0 +1,121 @@
+вот файл design_1.v:
+
+`timescale 1ns / 1ps
+
+module design_1 (
+    input [0:6] x,
+    input clk,
+    output [0:9] out
+);
+
+Neuron #(.k({-7'sd1, -7'sd1, -7'sd1, -7'sd1, 7'sd1, 7'sd1, 7'sd2}), .b(0), .number(0)) n0 (x,clk,out[0]);
+Neuron #({-7'sd1, -7'sd1, -7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1}, 1, 1) n1 (x,clk,out[1]);
+Neuron #({-7'sd1, -7'sd1, -7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd2}, 2, 2) n2 (x,clk,out[2]);
+Neuron #({-7'sd1, -7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1}, 3, 3) n3 (x,clk,out[3]);
+Neuron #({-7'sd1, -7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd2}, 4, 4) n4 (x,clk,out[4]);
+Neuron #({-7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1}, 5, 5) n5 (x,clk,out[5]);
+Neuron #({-7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd2}, 6, 6) n6 (x,clk,out[6]);
+Neuron #({7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1}, 7, 7) n7 (x,clk,out[7]);
+Neuron #({7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd2}, 8, 8) n8 (x,clk,out[8]);
+Neuron #({7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd1, 7'sd2, 7'sd2}, 9, 9) n9 (x,clk,out[9]);
+
+endmodule
+
+
+
+вот файл design_2.v:
+
+`timescale 1ns / 1ps
+module Neuron #(
+    parameter [4*7-1:0] k = 0,
+    parameter [3:0] b = 0,
+    parameter [3:0] number = 0
+)
+(
+    input [0:6] x,
+    input clk,
+    output out
+);
+integer cnt;
+reg signed [4:0] res;
+assign out = res == b;
+
+initial
+begin
+    res = 3;
+end
+
+always@(posedge clk)
+begin
+    res = 3;
+end
+always@(x)
+begin: main
+    for(cnt=0; cnt<7; cnt=cnt+1)
+    begin
+        if (x[cnt] == 0)
+            res = res - $signed(k[27-4*cnt-:4]);
+        else
+            res = res + $signed(k[27-4*cnt-:4]);
+        $display("%d: %d: %d: res = %d", number, cnt, $signed(k[27-4*cnt-:4]), res);
+    end
+end
+
+endmodule
+
+вот файл test.v:
+
+`timescale 1ns / 1ps
+
+module test;
+
+    reg clk;
+    reg [0:6] x;
+    wire [0:9] out;
+    
+    // Инстанцируем дизайн, который мы хотим протестировать
+    design_1 uut(
+        .x(x),
+        .clk(clk),
+        .out(out)
+    );
+    
+    // Часы для тестирования, скажем 100MHz
+    initial clk = 0;
+    always #5 clk = !clk;  // Переключение каждые 5 наносекунд
+    
+    // Пример: настройка ввода для отображения цифры 3
+    //   _         _   _         _   _     _   _
+    //  |_| цифра 0: 0b000_0001 (1 - не горит, 0 - горит)
+    //  |_| цифра 1: 0b100_1111
+    // И так далее в соответствии с кодировкой вашего семисегментного индикатора.
+    // Обратите внимание, что могут быть различные стандарты кодировки.
+    
+    initial begin
+        // Цифры от 0 до 9, и обозначение семи сегментов a, b, c, d, e, f, g. Вход x инвертирован.
+        // Кодировка должна быть напротив, когда '0' обозначает включенный сегмент,
+        // и '1' обозначает выключенный сегмент из-за входной полярности в design_1.
+        // Пример дан для общего анода, когда '0' активирует сегмент, а '1' выключает его.
+        #10 x = 7'b111_1110; // Цифра 0
+        #10 x = 7'b011_0000; // Цифра 1
+        #10 x = 7'b110_1101; // Цифра 2
+        #10 x = 7'b111_1001; // Цифра 3
+        #10 x = 7'b011_0011; // Цифра 4
+        #10 x = 7'b101_1011; // Цифра 5
+        #10 x = 7'b101_1111; // Цифра 6
+        #10 x = 7'b111_0000; // Цифра 7
+        #10 x = 7'b111_1111; // Цифра 8
+        #10 x = 7'b111_1011; // Цифра 9
+        #10 $finish; // Конец теста
+    end
+    
+    initial begin
+        $monitor("Time = %8t x = %7b out = %10b \n", $time, x, out);
+    end
+
+endmodule
+
+напиши простой персептрон который обучается на входных данных x для распознавания цифр на семисегментном индикаторе
+
+
+

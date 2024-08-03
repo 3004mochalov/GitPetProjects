@@ -1,0 +1,324 @@
+вот файл Config.py:
+
+WIDTH, HEIGHT = 1600, 900
+
+вот файл MainGame.py:
+
+import pygame
+import sys
+import MainMenu
+from Config import WIDTH, HEIGHT
+
+# Устанавливаем заголовок и иконку
+pygame.display.set_caption('SoulReborn')
+icon_image = pygame.image.load('icon.png')
+pygame.display.set_icon(icon_image)
+
+def main():
+    MainMenu.start_game()  # В MainMenu.py должен быть основной игровой цикл в функции start_game
+
+if __name__ == '__main__':
+    pygame.init()  # Эту строчку перенес из MainMenu.py сюда, чтобы инициализировать pygame один раз
+    main()
+
+
+
+вот файл MainMenu.py:
+
+import pygame
+import sys
+from StartGame import start_game_menu
+from Config import WIDTH, HEIGHT
+# Инициализация Pygame
+pygame.init()
+
+
+class Button:
+    def __init__(self, image, pressed_image, text, font, color, scale=1, action=None):
+        # Масштабирование изображений
+        self.original_image = image
+        self.original_pressed_image = pressed_image
+
+        # Получение новых размеров с применением масштаба
+        width = int(self.original_image.get_width() * scale)
+        height = int(self.original_image.get_height() * scale)
+
+        # Применение масштабирования к изображениям
+        self.image = pygame.transform.scale(self.original_image, (width, height))
+        self.pressed_image = pygame.transform.scale(self.original_pressed_image, (width, height))
+        self.rect = self.image.get_rect()
+        self.pressed = False
+        self.action = action
+
+        # Создаем текстовую метку и её прямоугольник
+        self.text_surface = font.render(text, True, color)
+        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
+
+    def update_position(self, center_x, center_y):
+        self.rect.center = (center_x, center_y)
+        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
+
+    def draw(self, screen):
+        if self.pressed:
+            screen.blit(self.pressed_image, self.rect)
+        else:
+            screen.blit(self.image, self.rect)
+        screen.blit(self.text_surface, self.text_rect)
+
+    def update(self, event_list):
+        for event in event_list:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.rect.collidepoint(event.pos):
+                    self.pressed = True
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if self.rect.collidepoint(event.pos) and self.pressed:
+                    self.pressed = False
+                    if self.action:  # Если кнопка была нажата, выполнить действие
+                        self.action()
+            elif event.type == pygame.MOUSEMOTION:
+                if not self.rect.collidepoint(event.pos):
+                    self.pressed = False
+
+    def on_click(self):
+        if self.action:  # Вызывать действие кнопки также здесь, если нужно
+            self.action()
+
+
+
+
+start_game_selected = False # Добавьте эту переменную в начале
+# Здесь должна быть реализация функции start_game
+def start_game():
+    global running, start_game_selected
+    running = True
+    start_game_selected = True  # Устанавливаем этот флаг когда пользователь выбирает начать игру
+    start_game_menu()
+
+
+# Здесь должна быть реализация функции settings
+def settings():
+    print("Настройки игры!")  # Здесь можно вызвать меню настроек
+
+
+# Функция выхода из игры
+def quit_game():
+    pygame.quit()
+    sys.exit()
+
+
+# Указание размеров окна
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('SoulReborn')
+
+# Загрузка изображений для иконки и кнопок
+icon_image = pygame.image.load('icon.png')
+button_image = pygame.image.load('MainMenuSprites/button.png')
+button_pressed_image = pygame.image.load('MainMenuSprites/button_pressed.png')
+
+logo_image = pygame.image.load('MainMenuSprites/logo.png')
+# Масштабирование логотипа, если это необходимо (опционально)
+# logo_image = pygame.transform.scale(logo_image, (новый_ширину, новая_высоту))
+logo_rect = logo_image.get_rect()
+
+# Высота кнопки
+button_scale = 1  # Пример высоты кнопки
+
+# Установка иконки окна
+pygame.display.set_icon(icon_image)
+
+# Создаем шрифт для текста на кнопках
+button_font = pygame.font.Font(None, 18)  # None означает использование шрифта по умолчанию
+button_text_color = (0, 0, 0)
+
+# Теперь Button требует дополнительные аргументы: текст для кнопки, шрифт и цвет текста
+button1 = Button(button_image, button_pressed_image, 'start game', button_font, button_text_color, button_scale, start_game)
+button_settings = Button(button_image, button_pressed_image, 'settings', button_font, button_text_color, button_scale, settings)
+button2 = Button(button_image, button_pressed_image, 'quit game', button_font, button_text_color, button_scale, quit_game)
+
+
+# Определение расстояния между кнопками
+button_spacing = 20
+
+top_offset_quantifier = 3
+top_offset = HEIGHT - HEIGHT/top_offset_quantifier  # отступ от верхней границы
+
+# Основной цикл игры
+running = True
+while running:
+    # Заливка экрана
+    screen.fill((0, 0, 255))
+
+    # Определение текущего размера экрана
+    WIDTH, HEIGHT = pygame.display.get_surface().get_size()
+
+    # Расчёт позиций для кнопок
+    total_buttons_height = (button1.rect.height +
+                            button_settings.rect.height +
+                            button2.rect.height +
+                            button_spacing * 2)
+
+    # Расчёт позиций для кнопок, начиная с отступа от верхней части окна
+    button1_y_position = top_offset
+    button_settings_y_position = button1_y_position + button1.rect.height + button_spacing
+    button2_y_position = button_settings_y_position + button_settings.rect.height + button_spacing
+
+    button1.update_position(WIDTH / 2, button1_y_position)
+    button_settings.update_position(WIDTH / 2, button_settings_y_position)
+    button2.update_position(WIDTH / 2, button2_y_position)
+
+    logo_rect.center = (WIDTH / 2, button1_y_position / 2)
+    screen.blit(logo_image, logo_rect)
+
+    # Отрисовка кнопок
+    button1.draw(screen)
+    button_settings.draw(screen)
+    button2.draw(screen)
+
+    # Получение списка всех событий
+    event_list = pygame.event.get()
+
+    # Обработка событий
+    for event in event_list:
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Обновление состояния кнопок
+    button1.update(event_list)
+    button_settings.update(event_list)
+    button2.update(event_list)
+
+    # Переключение экрана
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
+
+
+вот файл StartGame.py:
+
+import pygame
+import sys
+from Config import WIDTH, HEIGHT
+
+# Initialize Pygame
+pygame.init()
+
+
+class Button:
+    # добавил параметр scale к конструктору
+    def __init__(self, image, pressed_image, text, font, color, pos, scale=1, action=None):
+        self.image = pygame.transform.scale(image, (int(image.get_width() * scale), int(image.get_height() * scale)))
+        self.pressed_image = pygame.transform.scale(pressed_image, (int(pressed_image.get_width() * scale),
+                                                                    int(pressed_image.get_height() * scale)))
+        self.action = action
+        self.pos = pos
+
+        self.rect = self.image.get_rect(center=pos)
+        self.text = font.render(text, True, color)
+        self.text_rect = self.text.get_rect(center=self.rect.center)
+
+        self.pressed = False
+
+    def draw(self, screen):
+        if self.pressed:
+            screen.blit(self.pressed_image, self.rect)
+        else:
+            screen.blit(self.image, self.rect)
+        screen.blit(self.text, self.text_rect)
+
+    def update(self, event_list):
+        for event in event_list:
+            if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
+                self.pressed = True
+            elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
+                if self.pressed:
+                    self.pressed = False
+                    if self.action:
+                        self.action()
+
+    # новый метод для обновления позиции кнопки
+    def update_position(self, center_x, center_y):
+        self.rect.center = (center_x, center_y)
+        self.text_rect = self.text.get_rect(center=self.rect.center)
+
+
+def new_game_action():
+    print("Новая игра начата!")  # Здесь должен быть код для начала новой игры
+
+
+def load_game_action():
+    print("Загрузка предыдущей игры!")  # Здесь должен быть код для загрузки игры
+
+
+def back_action():
+    global running
+    running = False
+
+
+def start_game_menu():
+    global running  # Добавьте эту строку для использования глобальной переменной running
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))  # используйте конфигурацию
+
+    # использование тех же параметров для масштабирования и положения, что и в MainMenu
+    button_scale = 1  # в MainMenu использовался этот масштаб
+    button_spacing = 20
+
+    button_font = pygame.font.Font(None, 18)
+    button_color = (0, 0, 0)
+    button_image = pygame.image.load('MainMenuSprites/button.png')
+    button_pressed_image = pygame.image.load('MainMenuSprites/button_pressed.png')
+
+    # кнопки создаются без начального положения, мы его установим позже
+    new_game_button = Button(button_image, button_pressed_image, 'New Game', button_font, button_color, (0, 0),
+                             button_scale, new_game_action)
+    load_game_button = Button(button_image, button_pressed_image, 'Load Game', button_font, button_color, (0, 0),
+                              button_scale, load_game_action)
+    back_button = Button(button_image, button_pressed_image, 'Back', button_font, button_color, (0, 0), button_scale,
+                         back_action)
+
+    buttons = [new_game_button, load_game_button, back_button]
+
+    running = True
+    while running:
+        screen.fill((0, 0, 255))
+
+        # Получите актуальный размер экрана на каждой итерации цикла
+        WIDTH, HEIGHT = screen.get_size()
+
+        # Ваши кнопки должны быть также выравниваться по центру экрана
+        total_buttons_height = (new_game_button.rect.height +
+                                load_game_button.rect.height +
+                                back_button.rect.height +
+                                button_spacing * 2)
+        top_offset = HEIGHT / 2 - total_buttons_height / 2
+
+        # Установка вычисленных позиций
+        new_game_button.update_position(WIDTH / 2, top_offset)
+        load_game_button.update_position(WIDTH / 2, top_offset + new_game_button.rect.height + button_spacing)
+        back_button.update_position(WIDTH / 2,
+                                    top_offset + new_game_button.rect.height + load_game_button.rect.height + button_spacing * 2)
+
+        event_list = pygame.event.get()
+        for event in event_list:
+            if event.type == pygame.QUIT:
+                running = False
+
+        for button in buttons:
+            button.update(event_list)
+            button.draw(screen)
+
+        pygame.display.flip()
+
+Traceback (most recent call last):
+  File "C:\Users\User\Desktop\поделки\Игра на питоне\SoulReborn\MainGame.py", line 3, in <module>
+    import MainMenu
+  File "C:\Users\User\Desktop\поделки\Игра на питоне\SoulReborn\MainMenu.py", line 159, in <module>
+    button1.update(event_list)
+  File "C:\Users\User\Desktop\поделки\Игра на питоне\SoulReborn\MainMenu.py", line 50, in update
+    self.action()
+  File "C:\Users\User\Desktop\поделки\Игра на питоне\SoulReborn\MainMenu.py", line 68, in start_game
+    start_game_menu()
+  File "C:\Users\User\Desktop\поделки\Игра на питоне\SoulReborn\StartGame.py", line 62, in start_game_menu
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))  # используйте конфигурацию
+UnboundLocalError: local variable 'WIDTH' referenced before assignment 
+

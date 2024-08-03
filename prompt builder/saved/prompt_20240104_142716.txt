@@ -1,0 +1,270 @@
+вот файл Config.py:
+
+WIDTH, HEIGHT = 1600, 900
+
+вот файл MainGame.py:
+
+import pygame
+import sys
+import MainMenu
+from Config import WIDTH, HEIGHT
+
+# Устанавливаем заголовок и иконку
+pygame.display.set_caption('SoulReborn')
+icon_image = pygame.image.load('icon.png')
+pygame.display.set_icon(icon_image)
+
+def main():
+    MainMenu.start_game()  # В MainMenu.py должен быть основной игровой цикл в функции start_game
+
+if __name__ == '__main__':
+    pygame.init()  # Эту строчку перенес из MainMenu.py сюда, чтобы инициализировать pygame один раз
+    main()
+
+
+
+вот файл MainMenu.py:
+
+import pygame
+import sys
+from StartGame import start_game_menu
+from Config import WIDTH, HEIGHT
+# Инициализация Pygame
+pygame.init()
+
+
+class Button:
+    def __init__(self, image, pressed_image, text, font, color, scale=1, action=None):
+        # Масштабирование изображений
+        self.original_image = image
+        self.original_pressed_image = pressed_image
+
+        # Получение новых размеров с применением масштаба
+        width = int(self.original_image.get_width() * scale)
+        height = int(self.original_image.get_height() * scale)
+
+        # Применение масштабирования к изображениям
+        self.image = pygame.transform.scale(self.original_image, (width, height))
+        self.pressed_image = pygame.transform.scale(self.original_pressed_image, (width, height))
+        self.rect = self.image.get_rect()
+        self.pressed = False
+        self.action = action
+
+        # Создаем текстовую метку и её прямоугольник
+        self.text_surface = font.render(text, True, color)
+        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
+
+    def update_position(self, center_x, center_y):
+        self.rect.center = (center_x, center_y)
+        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
+
+    def draw(self, screen):
+        if self.pressed:
+            screen.blit(self.pressed_image, self.rect)
+        else:
+            screen.blit(self.image, self.rect)
+        screen.blit(self.text_surface, self.text_rect)
+
+    def update(self, event_list):
+        for event in event_list:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.rect.collidepoint(event.pos):
+                    self.pressed = True
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if self.rect.collidepoint(event.pos) and self.pressed:
+                    self.pressed = False
+                    if self.action:  # Если кнопка была нажата, выполнить действие
+                        self.action()
+            elif event.type == pygame.MOUSEMOTION:
+                if not self.rect.collidepoint(event.pos):
+                    self.pressed = False
+
+    def on_click(self):
+        if self.action:  # Вызывать действие кнопки также здесь, если нужно
+            self.action()
+
+
+
+
+start_game_selected = False # Добавьте эту переменную в начале
+# Здесь должна быть реализация функции start_game
+def start_game():
+    global running, start_game_selected
+    running = True
+    start_game_selected = True  # Устанавливаем этот флаг когда пользователь выбирает начать игру
+    start_game_menu()
+
+
+# Здесь должна быть реализация функции settings
+def settings():
+    print("Настройки игры!")  # Здесь можно вызвать меню настроек
+
+
+# Функция выхода из игры
+def quit_game():
+    pygame.quit()
+    sys.exit()
+
+
+# Указание размеров окна
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('SoulReborn')
+
+# Загрузка изображений для иконки и кнопок
+icon_image = pygame.image.load('icon.png')
+button_image = pygame.image.load('MainMenuSprites/button.png')
+button_pressed_image = pygame.image.load('MainMenuSprites/button_pressed.png')
+
+logo_image = pygame.image.load('MainMenuSprites/logo.png')
+# Масштабирование логотипа, если это необходимо (опционально)
+# logo_image = pygame.transform.scale(logo_image, (новый_ширину, новая_высоту))
+logo_rect = logo_image.get_rect()
+
+# Высота кнопки
+button_scale = 1  # Пример высоты кнопки
+
+# Установка иконки окна
+pygame.display.set_icon(icon_image)
+
+# Создаем шрифт для текста на кнопках
+button_font = pygame.font.Font(None, 18)  # None означает использование шрифта по умолчанию
+button_text_color = (0, 0, 0)
+
+# Теперь Button требует дополнительные аргументы: текст для кнопки, шрифт и цвет текста
+button1 = Button(button_image, button_pressed_image, 'start game', button_font, button_text_color, button_scale, start_game)
+button_settings = Button(button_image, button_pressed_image, 'settings', button_font, button_text_color, button_scale, settings)
+button2 = Button(button_image, button_pressed_image, 'quit game', button_font, button_text_color, button_scale, quit_game)
+
+
+# Определение расстояния между кнопками
+button_spacing = 20
+
+top_offset_quantifier = 3
+top_offset = HEIGHT - HEIGHT/top_offset_quantifier  # отступ от верхней границы
+
+# Основной цикл игры
+running = True
+while running:
+    # Заливка экрана
+    screen.fill((0, 0, 255))
+
+    # Определение текущего размера экрана
+    WIDTH, HEIGHT = pygame.display.get_surface().get_size()
+
+    # Расчёт позиций для кнопок
+    total_buttons_height = (button1.rect.height +
+                            button_settings.rect.height +
+                            button2.rect.height +
+                            button_spacing * 2)
+
+    # Расчёт позиций для кнопок, начиная с отступа от верхней части окна
+    button1_y_position = top_offset
+    button_settings_y_position = button1_y_position + button1.rect.height + button_spacing
+    button2_y_position = button_settings_y_position + button_settings.rect.height + button_spacing
+
+    button1.update_position(WIDTH / 2, button1_y_position)
+    button_settings.update_position(WIDTH / 2, button_settings_y_position)
+    button2.update_position(WIDTH / 2, button2_y_position)
+
+    logo_rect.center = (WIDTH / 2, button1_y_position / 2)
+    screen.blit(logo_image, logo_rect)
+
+    # Отрисовка кнопок
+    button1.draw(screen)
+    button_settings.draw(screen)
+    button2.draw(screen)
+
+    # Получение списка всех событий
+    event_list = pygame.event.get()
+
+    # Обработка событий
+    for event in event_list:
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Обновление состояния кнопок
+    button1.update(event_list)
+    button_settings.update(event_list)
+    button2.update(event_list)
+
+    # Переключение экрана
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
+
+
+вот файл Setting menu.py:
+
+
+
+Нужно разработать меню настроек по следующим требованиям: 
+
+нужно чтобы внизу была кнопка Back to menu для возврата в меню, также нужно чтобы разрешение изменялось на 
+4:3 800*600 1024*768 1280*960 | 16:9 1280*720 1600*900 1920*1080, 
+
+также нужно чтобы в настройках была возможность перевести игру из оконного режима в полноэкранный, 
+
+ВАЖНО: после любых изменений в настройках графики, должно появиться сообщение "графические настройки изменены, 
+сохранить настройки?" таймер 15 секунд с двумя кнопками да и нет, если таймер истечёт, 
+то это значит что нет и изменения графических настроек должны быть сброшены до последнего состояния. 
+
+Я нарисовал новые спрайты в папке MainMenuSprites: 
+
+Settings_collapse_listbar_button.png - кнопка сворачивания списка
+
+Settings_expand_listbar_button.png - кнопка раскрытия списка доступных вариантов разрешения
+
+*Settings_flagbutton_False.png
+
+*Settings_flagbutton_True.png
+
+Settings_list_begin.png - первый вариант разрешения
+
+Settings_list_continue.png - промежуточный вариант разрешения
+
+Settings_list_end.png - последний вариант разрешения
+
+Settings_listbar.png - текущее разрешение экрана или окна
+
+те спрайты которые звездой отмечены это для полноэкранного режима true - полноэкранный режим включён
+
+остальные спрайты для изменения разрешения экрана/окна свыше я прописал что за что отвечает, 
+важно чтобы менялись кнопки как и флажки, если кнопка expand нажат, то выскакивает отсортированный лист по порядку: 
+сначала 4:3 потом 16:9, список отсортирован по возрастанию количества точек. лист появляется начиная с list_begin и заканчивается list_end, 
+между ними если список не закончился должен быть list_continue. listbar показывает текущее разрешение и меняется при изменении разрешения. 
+возле него кнопка сворачивания и раскрытия. лист исчезает при нажатии на кнопку сворачивания и меняется на кнопку раскрытия и наоборот.
+
+кнопки которые выводятся в сообщении с таймером и кнопки в меню настроек используют теже спрайты что и были в главном меню
+
+-------------------------------------------------------------------------------------------------------------------
+
+1) Разработать интерфейс меню настроек, включая кнопку "Back to menu" для возврата в основное меню.
+вот спрайты интерфейса:
+
+Settings_collapse_listbar_button.png - кнопка сворачивания списка
+
+Settings_expand_listbar_button.png - кнопка раскрытия списка доступных вариантов разрешения
+
+*Settings_flagbutton_False.png
+
+*Settings_flagbutton_True.png
+
+Settings_list_begin.png - первый вариант разрешения
+
+Settings_list_continue.png - промежуточный вариант разрешения
+
+Settings_list_end.png - последний вариант разрешения
+
+Settings_listbar.png - текущее разрешение экрана или окна
+
+2) Реализовать функционал изменения разрешения экрана/окна. Добавить варианты разрешений: 4:3 (800x600, 1024x768, 1280x960) и 16:9 (1280x720, 1600x900, 1920x1080).
+
+3) Добавить возможность переключения между оконным и полноэкранным режимом. * это
+4) При изменении настроек графики, выводить сообщение "Графические настройки изменены. Сохранить настройки?" с таймером на 15 секунд.
+5) В сообщении с таймером отобразить кнопки "Да" и "Нет" для подтверждения или отмены сохранения изменений.
+6) Если время таймера истекло, отменить изменения графических настроек и вернуться к последнему сохраненному состоянию.
+7) Реализовать отображение и изменение спрайтов и кнопок в соответствии с выбранными настройками.
+
+-------------------------------------------------------------------------------------------------------------------
+начнём с простого или с того на чём остановились, если какую то часть одного задания ты пропустишь, то это нормально для тебя
